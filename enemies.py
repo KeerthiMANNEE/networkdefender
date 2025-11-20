@@ -1,9 +1,7 @@
-# enemies.py
-"""Enemy packet classes with different types and behaviors."""
-
 import pygame
 import math
 from typing import List, Tuple
+
 
 class Enemy:
     """Base enemy class."""
@@ -79,10 +77,10 @@ class Enemy:
         
         # Red background
         pygame.draw.rect(screen, (255, 0, 0),
-                        (self.x - bar_width // 2, self.y - 22, bar_width, bar_height))
+                         (self.x - bar_width // 2, self.y - 22, bar_width, bar_height))
         # Green health
         pygame.draw.rect(screen, (0, 255, 0),
-                        (self.x - bar_width // 2, self.y - 22, bar_width * health_ratio, bar_height))
+                         (self.x - bar_width // 2, self.y - 22, bar_width * health_ratio, bar_height))
 
 
 class BasicMalware(Enemy):
@@ -131,6 +129,32 @@ class TankPacket(Enemy):
         super().draw(screen)
 
 
+class StealthEnemy(Enemy):
+    """Stealthy enemy that moves invisibly or harder to detect."""
+    
+    def __init__(self, path, enemy_config):
+        super().__init__(path, enemy_config)
+        self.type = 'STEALTH'
+        self.color = (100, 100, 100)
+        self.radius = 12
+        self.icon = 'S'
+        self.reward = 120
+        self.invisible = True  # Stealth property
+    
+    def draw(self, screen):
+        """Draw with transparency to simulate stealth."""
+        s = pygame.Surface((self.radius * 2, self.radius * 2), pygame.SRCALPHA)
+        alpha = 100  # Transparency level
+        pygame.draw.circle(s, (*self.color, alpha), (self.radius, self.radius), self.radius)
+        screen.blit(s, (int(self.x) - self.radius, int(self.y) - self.radius))
+
+        # Optionally draw icon less visible or not at all for stealth
+        font = pygame.font.SysFont(None, 16, bold=True)
+        label = font.render(self.icon, True, (255, 255, 255, 80))
+        label_rect = label.get_rect(center=(self.x, self.y - self.radius - 15))
+        screen.blit(label, label_rect)
+
+
 class LegitimatePacket(Enemy):
     """Legitimate traffic that must NOT be blocked."""
     
@@ -151,12 +175,25 @@ class LegitimatePacket(Enemy):
         font = pygame.font.SysFont(None, 18, bold=True)
         label = font.render(self.icon, True, (255, 255, 255))
         screen.blit(label, (self.x - 8, self.y - self.radius - 18))
+class EncryptedEnemy(Enemy):
+    """Encrypted packet, maybe harder to detect and slower to destroy."""
+    def __init__(self, path, enemy_config):
+        super().__init__(path, enemy_config)
+        self.type = 'ENCRYPTED'
+        self.color = (0, 120, 200)
+        self.radius = 14
+        self.icon = 'ENC'
+        self.reward = 140
+    
+    # Optional: override draw or update for special effects
 
 
-# Enemy type mapping
+
 ENEMY_CLASSES = {
     'BASIC': BasicMalware,
     'FAST': FastPacket,
     'TANK': TankPacket,
+    'STEALTH': StealthEnemy,
+    'ENCRYPTED': EncryptedEnemy,
     'LEGITIMATE': LegitimatePacket
 }

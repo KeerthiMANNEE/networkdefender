@@ -3,7 +3,7 @@
     {
       "tower_placements": [
         {
-          "node": 2,
+          "node": 1,
           "type": "Firewall"
         }
       ],
@@ -67,12 +67,16 @@
     {
       "tower_placements": [
         {
-          "node": 1,
-          "type": "IDS"
-        },
-        {
           "node": 2,
           "type": "Firewall"
+        },
+        {
+          "node": 3,
+          "type": "Firewall"
+        },
+        {
+          "node": 1,
+          "type": "IDS"
         }
       ],
       "enemy_outcomes": [
@@ -119,7 +123,7 @@
         {
           "type": "BASIC",
           "path": [],
-          "destroyed": false
+          "destroyed": true
         },
         {
           "type": "BASIC",
@@ -140,20 +144,206 @@
       "defense_patterns": {},
       "level": 2,
       "player_won": true,
-      "defense_strategy": "IDS_FOCUSED"
+      "defense_strategy": "BALANCED"
     },
     {
       "tower_placements": [
         {
-          "node": 1,
-          "type": "IDS"
+          "node": 5,
+          "type": "Firewall"
         },
         {
           "node": 3,
           "type": "Firewall"
         },
         {
-          "node": 5,
+          "node": 4,
+          "type": "Firewall"
+        }
+      ],
+      "enemy_outcomes": [
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        }
+      ],
+      "defense_patterns": {},
+      "level": 3,
+      "player_won": true,
+      "defense_strategy": "FIREWALL_HEAVY"
+    },
+    {
+      "tower_placements": [
+        {
+          "node": 11,
+          "type": "Firewall"
+        },
+        {
+          "node": 10,
+          "type": "Firewall"
+        }
+      ],
+      "enemy_outcomes": [
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": false
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": false
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": false
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": false
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "FAST",
+          "path": [],
+          "destroyed": false
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "TANK",
+          "path": [],
+          "destroyed": true
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": false
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": false
+        }
+      ],
+      "defense_patterns": {},
+      "level": 4,
+      "player_won": false,
+      "defense_strategy": "FIREWALL_HEAVY"
+    },
+    {
+      "tower_placements": [
+        {
+          "node": 11,
+          "type": "IDS"
+        },
+        {
+          "node": 8,
           "type": "Firewall"
         }
       ],
@@ -169,81 +359,46 @@
           "destroyed": true
         },
         {
-          "type": "BASIC",
-          "path": [],
-          "destroyed": true
-        },
-        {
-          "type": "BASIC",
-          "path": [],
-          "destroyed": true
-        },
-        {
-          "type": "FAST",
-          "path": [],
-          "destroyed": true
-        },
-        {
-          "type": "BASIC",
-          "path": [],
-          "destroyed": true
-        },
-        {
-          "type": "FAST",
-          "path": [],
-          "destroyed": true
-        },
-        {
           "type": "FAST",
           "path": [],
           "destroyed": false
         },
         {
-          "type": "FAST",
+          "type": "BASIC",
           "path": [],
-          "destroyed": true
-        },
-        {
-          "type": "FAST",
-          "path": [],
-          "destroyed": true
+          "destroyed": false
         },
         {
           "type": "BASIC",
           "path": [],
-          "destroyed": true
-        },
-        {
-          "type": "FAST",
-          "path": [],
-          "destroyed": true
-        },
-        {
-          "type": "FAST",
-          "path": [],
-          "destroyed": true
+          "destroyed": false
         },
         {
           "type": "BASIC",
           "path": [],
-          "destroyed": true
+          "destroyed": false
         },
         {
           "type": "BASIC",
           "path": [],
-          "destroyed": true
+          "destroyed": false
+        },
+        {
+          "type": "BASIC",
+          "path": [],
+          "destroyed": false
         }
       ],
       "defense_patterns": {},
-      "level": 3,
-      "player_won": true,
-      "defense_strategy": "BALANCED"
+      "level": 4,
+      "player_won": false,
+      "defense_strategy": "IDS_FOCUSED"
     }
   ],
   "successful_paths": {
-    "()": 3
+    "()": 14
   },
   "failed_paths": {
-    "()": 34
+    "()": 46
   }
 }
