@@ -2,10 +2,10 @@ import pygame
 import sys
 import time
 import random
-from config import LEVELS, DYNAMIC_TOPOLOGIES, SCREEN_WIDTH, SCREEN_HEIGHT, FPS
+from config import LEVELS, SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from game_state import GameState
 from towers import TowerManager
-from ai_learning import AILearningSystem
+from ai_learning import AILearningSystem, generate_random_topology
 from ui import UI
 
 pygame.init()
@@ -29,15 +29,18 @@ wave_popup_time = None
 def init_level(level_num):
     global game_state, tower_manager, enemies, game_flow_state, wave_popup_time
     wave_popup_time = None
-    
     override_topo = None
+
     if LEVELS[level_num - 1].get("mode") == "ENDLESS":
-        override_topo = DYNAMIC_TOPOLOGIES[0]
-        ai_system.topology_list = DYNAMIC_TOPOLOGIES
-        ai_system.current_topology_idx = 0
-    
+        override_topo = generate_random_topology(
+            node_count=8, edge_count=12,
+            screen_width=SCREEN_WIDTH, screen_height=SCREEN_HEIGHT
+        )
+
     game_state = GameState(level_num, override_topology=override_topo)
-    tower_manager = TowerManager()
+    game_state.tower_manager = TowerManager(tower_limit=10)  # tower cap 10
+    tower_manager = game_state.tower_manager
+
     enemies.clear()
     game_flow_state = GAME_STATE_INTRO
 
@@ -55,7 +58,6 @@ def spawn_enemy():
             enemy_type = "LEGITIMATE"
         else:
             enemy_type = ai_system.select_counter_enemy_type(available_types, player_strategy)
-
     enemy = game_state.spawn_enemy(enemy_type)
     enemies.append(enemy)
 
@@ -81,13 +83,13 @@ def update_game():
     if game_state.should_spawn_enemy(enemies):
         spawn_enemy()
 
-    if game_state.level.get("mode") == "ENDLESS" and hasattr(ai_system, "switch_topology"):
+    if game_state.level.get("mode") == "ENDLESS":
         if game_state.packets_spawned > 0 and game_state.packets_spawned % 20 == 0:
-            ai_system.switch_topology(game_state)
+            ai_system.switch_topology(game_state, tower_manager, enemies)
+            wave_popup_time = time.time()
 
     game_state.update(enemies)
 
-    # Show wave start popup for 2 seconds
     if game_flow_state == GAME_STATE_PLAYING and wave_popup_time:
         elapsed = time.time() - wave_popup_time
         if elapsed < 2:
@@ -96,7 +98,6 @@ def update_game():
     if game_state.level_complete:
         game_flow_state = GAME_STATE_COMPLETE
         ai_system.end_session(game_state.level_number, True)
-
     elif game_state.level_failed:
         game_flow_state = GAME_STATE_FAILED
         ai_system.end_session(game_state.level_number, False)
@@ -110,9 +111,8 @@ def draw_game():
             (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2),
         )
         return
-
     ui.draw_network(
-        game_state.nodes, game_state.edges, game_state.start_node, game_state.goal_node
+        game_state.nodes, game_state.edges, game_state.sources[0], game_state.goal_node
     )
     tower_manager.draw(screen)
     for e in enemies:
@@ -130,29 +130,46 @@ def draw_game():
 def handle_tower_selection(mouse_pos):
     if game_state is None:
         return
-
     menu_x = SCREEN_WIDTH - 220
     menu_y = 120
     for i, tower_type in enumerate(game_state.level["towers_available"]):
         button_rect = pygame.Rect(menu_x, menu_y + i * 80, 190, 70)
         if button_rect.collidepoint(mouse_pos):
             ui.selected_tower_type = tower_type
-
-def handle_tower_placement(mouse_pos):
+def handle_tower_placement(mouse_pos, is_removal=False):
     if game_state is None or tower_manager is None:
         return
     node_id, node_pos = get_node_at_position(mouse_pos)
-    if node_id is None or ui.selected_tower_type is None:
+    if node_id is None:
         return
-    can_place, message = tower_manager.can_place_tower(
-        node_pos, ui.selected_tower_type, game_state.money
-    )
+
+    # Enforce chokepoint placement restriction only on final level
+    is_final_level = (game_state.level_number == len(LEVELS))
+    if is_final_level and node_id not in game_state.chokepoints:
+        print("X Tower placement only allowed on chokepoints in final level!")
+        return
+
+    if is_removal:
+        removed = tower_manager.remove_tower_at(node_pos)
+        if removed:
+            print("Tower removed.")
+        else:
+            print("No tower to remove here.")
+        return
+
+    if ui.selected_tower_type is None:
+        print("No tower selected to place")
+        return
+
+    can_place, message = tower_manager.can_place_tower(node_pos, ui.selected_tower_type, game_state.money)
     if can_place:
         cost = tower_manager.add_tower(node_pos[0], node_pos[1], ui.selected_tower_type)
         game_state.money -= cost
-        ai_system.record_tower_placement(node_id, ui.selected_tower_type)
+        print(f"Placed tower {ui.selected_tower_type} at {node_pos}, money left {game_state.money}")
     else:
-        print(f"✗ Cannot place tower: {message}")
+        print(f"X Cannot place tower: {message}")
+
+
 
 def get_node_at_position(pos):
     if game_state is None:
@@ -160,11 +177,14 @@ def get_node_at_position(pos):
     for i, node_pos in enumerate(game_state.nodes):
         dx = pos[0] - node_pos[0]
         dy = pos[1] - node_pos[1]
-        if dx * dx + dy * dy < 900:
+        dist_sq = dx * dx + dy * dy
+        if dist_sq < 900:
+            print(f"Click near node {i} at {node_pos} detected")
             return i, node_pos
+    print(f"No node near click at {pos}")
     return None, None
 
-# Main loop
+
 def main():
     global game_flow_state, current_level, wave_popup_time
     init_level(current_level)
@@ -174,12 +194,15 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 if game_flow_state == GAME_STATE_PLAYING:
-                    if event.pos[0] > SCREEN_WIDTH - 230:
-                        handle_tower_selection(event.pos)
-                    else:
-                        handle_tower_placement(event.pos)
+                    if event.button == 1:  # left click
+                        if event.pos[0] > SCREEN_WIDTH - 230:
+                            handle_tower_selection(event.pos)
+                        else:
+                            handle_tower_placement(event.pos, is_removal=False)
+                    elif event.button == 3:  # right click remove tower
+                        handle_tower_placement(event.pos, is_removal=True)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     if game_flow_state == GAME_STATE_INTRO:
@@ -204,13 +227,19 @@ def main():
 
         if game_flow_state == GAME_STATE_PLAYING:
             update_game()
+
         draw_game()
+
+        ui.update()
+        ui.draw_message()
+        if game_state is not None:
+            ui.draw_blinking_nodes(game_state.nodes)
+
         pygame.display.flip()
         clock.tick(FPS)
 
     pygame.quit()
     sys.exit()
-
 
 if __name__ == "__main__":
     main()

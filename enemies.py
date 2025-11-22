@@ -6,7 +6,7 @@ from typing import List, Tuple
 class Enemy:
     """Base enemy class."""
     
-    def __init__(self, path: List[Tuple[int, int]], enemy_config: dict):
+    def _init_(self, path: List[Tuple[int, int]], enemy_config: dict):
         self.path = path
         self.current_point = 0
         self.x, self.y = self.path[0] if path else (0, 0)
@@ -87,7 +87,7 @@ class BasicMalware(Enemy):
     """Basic malicious packet."""
     
     def __init__(self, path, enemy_config):
-        super().__init__(path, enemy_config)
+        super()._init_(path, enemy_config)
         self.type = 'BASIC'
         self.color = (255, 50, 50)
         self.radius = 12
@@ -99,7 +99,7 @@ class FastPacket(Enemy):
     """Fast, low-health packet."""
     
     def __init__(self, path, enemy_config):
-        super().__init__(path, enemy_config)
+        super()._init_(path, enemy_config)
         self.type = 'FAST'
         self.color = (255, 150, 50)
         self.radius = 10
@@ -111,7 +111,7 @@ class TankPacket(Enemy):
     """Slow, high-health packet."""
     
     def __init__(self, path, enemy_config):
-        super().__init__(path, enemy_config)
+        super()._init_(path, enemy_config)
         self.type = 'TANK'
         self.color = (150, 50, 255)
         self.radius = 18
@@ -128,12 +128,42 @@ class TankPacket(Enemy):
         # Icon and health bar
         super().draw(screen)
 
+class AdaptiveEnemy(Enemy):
+    """Adaptive enemy that modifies behavior dynamically."""
+    def __init__(self, path, enemy_config):
+        super()._init_(path, enemy_config)
+        self.type = 'ADAPTIVE'
+        self.color = (180, 0, 180)
+        self.radius = 14
+        self.icon = 'ADPT'
+        self.reward = 130
+
+        self.adaptive_speed = self.speed
+        self.adaptive_health = self.health
+
+    def update(self):
+        # Example adaptive logic: slightly increase speed if many towers nearby
+        # (Extend with your own adaptive behavior here)
+        self.speed = self.adaptive_speed
+
+        super().update()
+
+    def draw(self, screen):
+        # Draw main circle with distinctive bright purple color
+        pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
+        # Draw icon label above enemy
+        font = pygame.font.SysFont(None, 18, bold=True)
+        label = font.render(self.icon, True, (255, 255, 255))
+        screen.blit(label, (int(self.x) - 15, int(self.y) - self.radius - 20))
+
+        # Optionally draw health bar
+        super().draw_health_bar(screen)
 
 class StealthEnemy(Enemy):
     """Stealthy enemy that moves invisibly or harder to detect."""
     
     def __init__(self, path, enemy_config):
-        super().__init__(path, enemy_config)
+        super()._init_(path, enemy_config)
         self.type = 'STEALTH'
         self.color = (100, 100, 100)
         self.radius = 12
@@ -159,7 +189,7 @@ class LegitimatePacket(Enemy):
     """Legitimate traffic that must NOT be blocked."""
     
     def __init__(self, path, enemy_config):
-        super().__init__(path, enemy_config)
+        super()._init_(path, enemy_config)
         self.type = 'LEGITIMATE'
         self.color = (50, 255, 50)
         self.radius = 10
@@ -178,7 +208,7 @@ class LegitimatePacket(Enemy):
 class EncryptedEnemy(Enemy):
     """Encrypted packet, maybe harder to detect and slower to destroy."""
     def __init__(self, path, enemy_config):
-        super().__init__(path, enemy_config)
+        super()._init_(path, enemy_config)
         self.type = 'ENCRYPTED'
         self.color = (0, 120, 200)
         self.radius = 14
@@ -195,5 +225,6 @@ ENEMY_CLASSES = {
     'TANK': TankPacket,
     'STEALTH': StealthEnemy,
     'ENCRYPTED': EncryptedEnemy,
-    'LEGITIMATE': LegitimatePacket
+    'LEGITIMATE': LegitimatePacket,
+    'ADAPTIVE': AdaptiveEnemy
 }
